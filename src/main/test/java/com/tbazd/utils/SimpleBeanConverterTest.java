@@ -1,6 +1,11 @@
 package com.tbazd.utils;
 
+import org.bson.types.ObjectId;
 import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -18,18 +23,26 @@ public class SimpleBeanConverterTest {
         Foo source = new Foo();
         source.setStringProperty("testValue");
         source.setIntProperty(7);
+        source.setBigDecimalProperty(new BigDecimal("122"));
+        source.setId(new ObjectId("56dd410ed4c6407deacd7e78"));
 
-        Bar result = SimpleBeanConverter.convert(source, Foo.class, Bar.class);
+        Map<String, String> properties = new HashMap<>();
+        properties.put("id", "MONGODB");
+
+        Bar result = SimpleBeanConverter.convert(source, Foo.class, Bar.class, properties);
 
         assertNotNull(result);
         assertEquals("testValue", result.getStringProperty());
         assertEquals(7, result.getIntProperty());
+        assertEquals("56dd410ed4c6407deacd7e78", result.getId());
     }
 
     public static class Foo {
 
         private String stringProperty;
         private int intProperty;
+        private BigDecimal bigDecimalProperty;
+        private ObjectId id;
 
         public String getStringProperty() {
             return stringProperty;
@@ -45,6 +58,22 @@ public class SimpleBeanConverterTest {
 
         public void setIntProperty(int intProperty) {
             this.intProperty = intProperty;
+        }
+
+        public BigDecimal getBigDecimalProperty() {
+            return bigDecimalProperty;
+        }
+
+        public void setBigDecimalProperty(BigDecimal bigDecimalProperty) {
+            this.bigDecimalProperty = bigDecimalProperty;
+        }
+
+        public ObjectId getId() {
+            return id;
+        }
+
+        public void setId(ObjectId id) {
+            this.id = id;
         }
     }
 
@@ -52,6 +81,7 @@ public class SimpleBeanConverterTest {
 
         private String stringProperty;
         private int intProperty;
+        private String id;
 
         public String getStringProperty() {
             return stringProperty;
@@ -67,6 +97,14 @@ public class SimpleBeanConverterTest {
 
         public void setIntProperty(int intProperty) {
             this.intProperty = intProperty;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
         }
     }
 }
