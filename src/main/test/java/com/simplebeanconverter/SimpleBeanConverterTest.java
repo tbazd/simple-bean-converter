@@ -1,4 +1,4 @@
-package com.tbazd.utils;
+package com.simplebeanconverter;
 
 import org.bson.types.ObjectId;
 import org.junit.Test;

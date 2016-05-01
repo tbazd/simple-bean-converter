@@ -1,4 +1,4 @@
-package com.tbazd.utils;
+package com.simplebeanconverter;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
