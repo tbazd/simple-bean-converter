@@ -4,7 +4,12 @@ import org.bson.types.ObjectId;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -20,29 +25,43 @@ public class SimpleBeanConverterTest {
 
     @Test
     public void convertTest() throws Throwable {
-        Foo source = new Foo();
+        Source source = new Source();
         source.setStringProperty("testValue");
         source.setIntProperty(7);
         source.setBigDecimalProperty(new BigDecimal("122"));
         source.setId(new ObjectId("56dd410ed4c6407deacd7e78"));
+        source.setCreatedAt(LocalDateTime.now());
+        source.setUpdatedAt(new Date());
+        source.getStringList().addAll(Arrays.asList("some_string"));
 
         Map<String, String> properties = new HashMap<>();
         properties.put("id", "MONGODB");
+        properties.put("createdAt", "LOCAL_DATE_TIME");
+        properties.put("updatedAt", "LOCAL_DATE_TIME");
 
-        Bar result = SimpleBeanConverter.convert(source, Foo.class, Bar.class, properties);
+        Bar result = SimpleBeanConverter.convert(source, Bar.class, properties);
 
         assertNotNull(result);
         assertEquals("testValue", result.getStringProperty());
         assertEquals(7, result.getIntProperty());
         assertEquals("56dd410ed4c6407deacd7e78", result.getId());
+        assertNotNull(result.getCreatedAt());
+        assertNotNull(result.getUpdatedAt());
+        assertNotNull(result.getStringList());
+        assertEquals(1, result.getStringList().size());
+        assertEquals("some_string", result.getStringList().get(0));
+
     }
 
-    public static class Foo {
+    public static class Source {
 
         private String stringProperty;
         private int intProperty;
         private BigDecimal bigDecimalProperty;
         private ObjectId id;
+        private LocalDateTime createdAt;
+        private Date updatedAt;
+        private List<String> stringList = new ArrayList<>();
 
         public String getStringProperty() {
             return stringProperty;
@@ -75,6 +94,30 @@ public class SimpleBeanConverterTest {
         public void setId(ObjectId id) {
             this.id = id;
         }
+
+        public LocalDateTime getCreatedAt() {
+            return createdAt;
+        }
+
+        public void setCreatedAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+        }
+
+        public Date getUpdatedAt() {
+            return updatedAt;
+        }
+
+        public void setUpdatedAt(Date updatedAt) {
+            this.updatedAt = updatedAt;
+        }
+
+        public List<String> getStringList() {
+            return stringList;
+        }
+
+        public void setStringList(List<String> stringList) {
+            this.stringList = stringList;
+        }
     }
 
     public static class Bar {
@@ -82,6 +125,9 @@ public class SimpleBeanConverterTest {
         private String stringProperty;
         private int intProperty;
         private String id;
+        private Date createdAt;
+        private LocalDateTime updatedAt;
+        private List<String> stringList = new ArrayList<>();
 
         public String getStringProperty() {
             return stringProperty;
@@ -105,6 +151,30 @@ public class SimpleBeanConverterTest {
 
         public void setId(String id) {
             this.id = id;
+        }
+
+        public Date getCreatedAt() {
+            return createdAt;
+        }
+
+        public void setCreatedAt(Date createdAt) {
+            this.createdAt = createdAt;
+        }
+
+        public LocalDateTime getUpdatedAt() {
+            return updatedAt;
+        }
+
+        public void setUpdatedAt(LocalDateTime updatedAt) {
+            this.updatedAt = updatedAt;
+        }
+
+        public List<String> getStringList() {
+            return stringList;
+        }
+
+        public void setStringList(List<String> stringList) {
+            this.stringList = stringList;
         }
     }
 }
