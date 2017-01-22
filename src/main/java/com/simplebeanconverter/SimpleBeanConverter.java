@@ -28,6 +28,10 @@ public final class SimpleBeanConverter {
         return convert(source, targetClass, new HashMap<>());
     }
 
+    public static <T> T convert(Object source, Class<T> targetClass, Rules rules) {
+        return convert(source, targetClass, rules.getRules());
+    }
+
     /**
      * Main converter method.
      * Converter may receive map with additional rules.
@@ -98,15 +102,15 @@ public final class SimpleBeanConverter {
 
     private static Object rulesProcessing(Object sourceObject, String rule) {
         String sourceClassName = sourceObject.getClass().getCanonicalName();
-        switch (Rule.valueOf(rule)) {
+        switch (RuleEnum.valueOf(rule)) {
             case MONGODB:
-                if (Rule.MONGODB.getClassCanonicalName().equals(sourceClassName)) {
+                if (RuleEnum.MONGODB.getClassCanonicalName().equals(sourceClassName)) {
                     return sourceObject.toString();
                 } //else {
                     //TODO: produce ObjectId here
                 //}
             case LOCAL_DATE_TIME:
-                if (Rule.LOCAL_DATE_TIME.getClassCanonicalName().equals(sourceClassName)) {
+                if (RuleEnum.LOCAL_DATE_TIME.getClassCanonicalName().equals(sourceClassName)) {
                     return Date.from(((LocalDateTime) sourceObject).toInstant(ZoneOffset.UTC));
                 } else {
                     return LocalDateTime.ofInstant(((Date) sourceObject).toInstant(), ZoneOffset.UTC);
@@ -124,7 +128,7 @@ public final class SimpleBeanConverter {
         return Character.toLowerCase(input.charAt(0)) + input.substring(1);
     }
 
-    private enum Rule {
+    private enum RuleEnum {
 
         MONGODB("org.bson.types.ObjectId"),
 
@@ -132,7 +136,7 @@ public final class SimpleBeanConverter {
         
         private String classCanonicalName;
 
-        Rule(String value) {
+        RuleEnum(String value) {
             this.classCanonicalName = value;
         }
 
@@ -140,9 +144,8 @@ public final class SimpleBeanConverter {
             return classCanonicalName;
         }
 
-        public static Optional<Rule> getRule(String classCanonicalName) {
-            return Arrays.asList(values())
-                    .stream()
+        public static Optional<RuleEnum> getRule(String classCanonicalName) {
+            return Arrays.stream(values())
                     .filter(v -> v.classCanonicalName.equals(classCanonicalName))
                     .findFirst();
         }

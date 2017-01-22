@@ -6,7 +6,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +21,10 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author vknysh
  */
+// TODO: Create more readable tests
+// TODO: Think on vise versa ObjectId convertation (optional dependency in maven!)
+// TODO: Create JMH test
+// TODO: Split method `convert`. It is too large.
 public class SimpleBeanConverterTest {
 
     @Test
@@ -30,9 +34,10 @@ public class SimpleBeanConverterTest {
         source.setIntProperty(7);
         source.setBigDecimalProperty(new BigDecimal("122"));
         source.setId(new ObjectId("56dd410ed4c6407deacd7e78"));
+        source.setToLocalDateTime(LocalDateTime.now());
         source.setCreatedAt(LocalDateTime.now());
         source.setUpdatedAt(new Date());
-        source.getStringList().addAll(Arrays.asList("some_string"));
+        source.getStringList().addAll(Collections.singletonList("some_string"));
 
         Map<String, String> properties = new HashMap<>();
         properties.put("id", "MONGODB");
@@ -45,6 +50,7 @@ public class SimpleBeanConverterTest {
         assertEquals("testValue", result.getStringProperty());
         assertEquals(7, result.getIntProperty());
         assertEquals("56dd410ed4c6407deacd7e78", result.getId());
+        assertEquals(LocalDateTime.class, result.getToLocalDateTime().getClass());
         assertNotNull(result.getCreatedAt());
         assertNotNull(result.getUpdatedAt());
         assertNotNull(result.getStringList());
@@ -59,6 +65,7 @@ public class SimpleBeanConverterTest {
         private int intProperty;
         private BigDecimal bigDecimalProperty;
         private ObjectId id;
+        private LocalDateTime toLocalDateTime;
         private LocalDateTime createdAt;
         private Date updatedAt;
         private List<String> stringList = new ArrayList<>();
@@ -95,6 +102,14 @@ public class SimpleBeanConverterTest {
             this.id = id;
         }
 
+        public LocalDateTime getToLocalDateTime() {
+            return toLocalDateTime;
+        }
+
+        public void setToLocalDateTime(LocalDateTime toLocalDateTime) {
+            this.toLocalDateTime = toLocalDateTime;
+        }
+
         public LocalDateTime getCreatedAt() {
             return createdAt;
         }
@@ -125,6 +140,7 @@ public class SimpleBeanConverterTest {
         private String stringProperty;
         private int intProperty;
         private String id;
+        private LocalDateTime toLocalDateTime;
         private Date createdAt;
         private LocalDateTime updatedAt;
         private List<String> stringList = new ArrayList<>();
@@ -151,6 +167,14 @@ public class SimpleBeanConverterTest {
 
         public void setId(String id) {
             this.id = id;
+        }
+
+        public LocalDateTime getToLocalDateTime() {
+            return toLocalDateTime;
+        }
+
+        public void setToLocalDateTime(LocalDateTime toLocalDateTime) {
+            this.toLocalDateTime = toLocalDateTime;
         }
 
         public Date getCreatedAt() {
