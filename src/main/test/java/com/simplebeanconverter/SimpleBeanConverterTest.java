@@ -44,7 +44,7 @@ public class SimpleBeanConverterTest {
         properties.put("createdAt", "LOCAL_DATE_TIME");
         properties.put("updatedAt", "LOCAL_DATE_TIME");
 
-        Bar result = SimpleBeanConverter.convert(source, Bar.class, properties);
+        Bar result = SimpleBeanConverter.convert(source, Bar.class, properties, new HashMap<>());
 
         assertNotNull(result);
         assertEquals("testValue", result.getStringProperty());

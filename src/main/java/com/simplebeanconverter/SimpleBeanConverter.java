@@ -6,9 +6,11 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -25,11 +27,11 @@ public final class SimpleBeanConverter {
     private SimpleBeanConverter() {}
 
     public static <T> T convert(Object source, Class<T> targetClass) {
-        return convert(source, targetClass, new HashMap<>());
+        return convert(source, targetClass, new HashMap<>(), new HashMap<>());
     }
 
     public static <T> T convert(Object source, Class<T> targetClass, Rules rules) {
-        return convert(source, targetClass, rules.getRules());
+        return convert(source, targetClass, rules.getRules(), rules.getEnclosed());
     }
 
     /**
@@ -41,7 +43,7 @@ public final class SimpleBeanConverter {
      * @param rules rules map, that setup additional converter behaviour
      * @return instance of target class
      */
-    public static <T> T convert(Object source, Class<T> targetClass, Map<String, String> rules) {
+    public static <T> T convert(Object source, Class<T> targetClass, Map<String, String> rules, Map<String, Class<?>> enclosed) {
         T targetInstance;
         try {
             targetInstance = targetClass.newInstance();
@@ -55,19 +57,22 @@ public final class SimpleBeanConverter {
             String methodName = method.getName();
             if (isGetter(methodName) && !"getClass".equals(methodName)) {
                 String fieldName = lowercaseFirstLetter(methodName.substring(3, methodName.length()));
-                MethodType sourceMethodType = MethodType.methodType(method.getReturnType());
-                Object sourceValue;
-                try {
-                    MethodHandle sourceMethodHandle = LOOKUP.findVirtual(sourceClass, methodName, sourceMethodType);
-                    sourceValue = sourceMethodHandle.invoke(source);
-                } catch (Throwable throwable) {
-                    throw new IllegalArgumentException("Exception during source reading : " + methodName);
-                }
+                Object sourceValue = getSourceValue(method, sourceClass, source);
 
                 Object targetValue;
                 Class<?> targetType;
                 if (!rules.isEmpty() && rules.containsKey(fieldName)) {
                     targetValue = rulesProcessing(sourceValue, rules.get(fieldName));
+                    targetType = targetValue.getClass();
+                } else if (!enclosed.isEmpty() && enclosed.containsKey(fieldName) && sourceValue instanceof List) {
+                    List<Object> targetValueList = new ArrayList<>();
+                    for (Object sourceValueElem : (List) sourceValue) {
+                        targetValueList.add(convert(sourceValueElem, enclosed.get(fieldName)));
+                    }
+                    targetValue = targetValueList;
+                    targetType = List.class;
+                } else if (!enclosed.isEmpty() && enclosed.containsKey(fieldName)) {
+                    targetValue = convert(sourceValue, enclosed.get(fieldName));
                     targetType = targetValue.getClass();
                 } else {
                     targetValue = sourceValue;
@@ -84,6 +89,18 @@ public final class SimpleBeanConverter {
         }
 
         return targetInstance;
+    }
+
+    private static Object getSourceValue(Method method, Class sourceClass, Object source) {
+        MethodType sourceMethodType = MethodType.methodType(method.getReturnType());
+        Object sourceValue;
+        try {
+            MethodHandle sourceMethodHandle = LOOKUP.findVirtual(sourceClass, method.getName(), sourceMethodType);
+            sourceValue = sourceMethodHandle.invoke(source);
+        } catch (Throwable throwable) {
+            throw new IllegalArgumentException("Exception during source reading : " + method.getName());
+        }
+        return sourceValue;
     }
 
     private static <T> void applyValue(Class<T> targetClass, String methodName, Class<?> targetType,
