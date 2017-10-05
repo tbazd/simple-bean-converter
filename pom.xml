@@ -5,7 +5,7 @@
     <groupId>simple-bean-converter</groupId>
     <artifactId>simple-bean-converter</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.3</version>
+    <version>0.0.4-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
